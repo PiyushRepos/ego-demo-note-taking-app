@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Docket — Notes
 
-## Getting Started
+A modern note-taking app. Colored sticky-note cards, instant search, favorites, and dark mode. Built with Next.js 16, React 19, shadcn/ui (base-mira), and Tailwind v4.
 
-First, run the development server:
+## Features
+
+- **Create / edit / delete** notes in a dialog editor
+- **8 pastel colors** per note, pickable inline
+- **Star** favorites — they sort to the top
+- **Search** across title and content, live
+- **Dark mode** toggle, persisted
+- **Local persistence** — notes and theme survive refresh (no backend)
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command          | Does                    |
+| ---------------- | ----------------------- |
+| `bun dev`        | Dev server              |
+| `bun run build`  | Production build        |
+| `bun start`      | Serve the build         |
+| `bun test`       | Run unit tests          |
+| `bun run lint`   | ESLint                  |
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+Client-side only. State lives in React; storage is the browser's `localStorage`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  page.tsx              Notes page — composition only, no storage logic
+  layout.tsx            Root layout, fonts, metadata
+lib/
+  notes.ts             Note model, colors, filterNotes (search+sort), storage, seed
+  notes.test.ts        Unit tests for filterNotes
+  utils.ts             cn()
+hooks/
+  use-notes.ts         Notes CRUD + auto-persist (single source of truth)
+  use-theme.ts         Persisted dark-mode toggle
+components/
+  note-card.tsx        Grid tile
+  note-editor.tsx      Add/edit dialog
+  ui/                  shadcn/ui primitives
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Storage
 
-## Deploy on Vercel
+Two `localStorage` keys:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `docket.notes.v1` — array of notes as JSON
+- `docket.theme` — `"dark"` | `"light"`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Per-browser, not synced across devices. To swap in a real backend, replace `loadNotes`/`saveNotes` in `lib/notes.ts` and the persistence calls in `hooks/use-notes.ts` — the UI is untouched.
+
+## Data model
+
+```ts
+type Note = {
+  id: string
+  title: string
+  content: string
+  color: NoteColor   // amber | coral | lime | violet | green | sky | rose | slate
+  starred: boolean
+  updatedAt: number
+}
+```
