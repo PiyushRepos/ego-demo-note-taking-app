@@ -51,7 +51,7 @@ export default function Home() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search"
+              placeholder="Search..."
               className="h-9 rounded-full border-transparent bg-muted pl-9 text-sm"
             />
           </div>
