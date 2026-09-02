@@ -40,13 +40,13 @@ export function NoteEditor({
       <DialogContent
         className={cn("sm:max-w-lg", NOTE_COLORS[draft.color].bg, "text-neutral-900 ring-black/10")}
       >
-        <div className="flex items-start gap-2">
+        <div className="flex min-w-0 items-start gap-2 pr-10">
           <Input
             autoFocus
             value={draft.title}
             onChange={(e) => patch({ title: e.target.value })}
             placeholder="Note title"
-            className="h-auto border-0 bg-transparent px-0 text-xl font-semibold text-neutral-900 placeholder:text-neutral-900/40 focus-visible:ring-0"
+            className="h-auto min-w-0 border-0 bg-transparent px-0 text-xl font-semibold text-neutral-900 placeholder:text-neutral-900/40 focus-visible:ring-0"
           />
           <Button
             size="icon"
