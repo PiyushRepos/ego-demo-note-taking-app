@@ -83,7 +83,7 @@ export default function Home() {
           {/* Main column */}
           <main className="min-w-0 flex-1">
             <h1 className="mb-8 text-5xl font-bold tracking-tight sm:text-6xl">
-              Notes
+              My notes
             </h1>
 
             {visible.length === 0 ? (
