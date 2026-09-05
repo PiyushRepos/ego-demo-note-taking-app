@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Docket — Notes",
+  title: "Docket — My notes",
   description: "A modern note-taking app.",
 };
 

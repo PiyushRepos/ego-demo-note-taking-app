@@ -1,4 +1,4 @@
-# Docket — Notes
+# Docket — My notes
 
 A modern note-taking app. Colored sticky-note cards, instant search, favorites, and dark mode. Built with Next.js 16, React 19, shadcn/ui (base-mira), and Tailwind v4.
 
@@ -36,14 +36,14 @@ Client-side only. State lives in React; storage is the browser's `localStorage`.
 
 ```
 app/
-  page.tsx              Notes page — composition only, no storage logic
+  page.tsx              My notes page — composition only, no storage logic
   layout.tsx            Root layout, fonts, metadata
 lib/
   notes.ts             Note model, colors, filterNotes (search+sort), storage, seed
   notes.test.ts        Unit tests for filterNotes
   utils.ts             cn()
 hooks/
-  use-notes.ts         Notes CRUD + auto-persist (single source of truth)
+  use-notes.ts         My notes CRUD + auto-persist (single source of truth)
   use-theme.ts         Persisted dark-mode toggle
 components/
   note-card.tsx        Grid tile
