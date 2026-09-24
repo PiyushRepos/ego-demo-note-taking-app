@@ -42,18 +42,31 @@ export default function Home() {
         {/* Top bar */}
         <header className="flex items-center gap-4 border-b border-border px-5 py-4 sm:px-8">
           <span className="text-lg font-bold tracking-tight">Docket</span>
-          <div className="relative ml-2 max-w-md flex-1">
-            <HugeiconsIcon
-              icon={Search01Icon}
-              size={16}
-              className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search"
-              className="h-9 rounded-full border-transparent bg-muted pl-9 text-sm"
-            />
+          <div className="ml-2 flex max-w-md flex-1 items-center gap-2">
+            <div className="relative flex-1">
+              <HugeiconsIcon
+                icon={Search01Icon}
+                size={16}
+                className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search"
+                className="h-9 rounded-full border-transparent bg-muted pl-9 text-sm"
+              />
+            </div>
+            {query ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                className="rounded-full"
+              >
+                Clear
+              </Button>
+            ) : null}
           </div>
           <Button
             variant="ghost"
