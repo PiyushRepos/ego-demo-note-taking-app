@@ -1,0 +1,137 @@
+# Copy to <target repo>/.github/workflows/orqly.yml
+# Repo secrets: OPENAI_API_KEY and/or GEMINI_API_KEY
+name: orqly
+run-name: orqly TASK-${{ inputs.task_id }} run ${{ inputs.run_no }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_id: { required: true, type: string }
+      run_no: { required: true, type: string, default: "1" }
+      branch: { required: true, type: string, description: "must start with orqly/" }
+      base_branch: { required: true, type: string, default: main }
+      new_branch: { required: true, type: boolean, default: true }
+      prompt: { required: true, type: string }
+      model: { required: true, type: string, default: openai/gpt-5 }
+
+concurrency:
+  group: orqly-task-${{ inputs.task_id }}
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash # bash -eo pipefail
+
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BRANCH: ${{ inputs.branch }}
+      TASK_ID: ${{ inputs.task_id }}
+      RUN_NO: ${{ inputs.run_no }}
+    steps:
+      - name: Validate branch
+        run: |
+          [[ "$BRANCH" == orqly/* ]] || { echo "::error::branch must start with orqly/"; exit 1; }
+          echo "OUT=$RUNNER_TEMP/orqly" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/orqly"
+
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.new_branch && inputs.base_branch || inputs.branch }}
+          fetch-depth: 0
+          persist-credentials: false # agent never sees a git token
+
+      - name: Create branch
+        if: inputs.new_branch
+        run: git switch -c "$BRANCH"
+
+      - name: Install OpenCode
+        run: npm i -g opencode-ai@1.18
+
+      # Same OpenCode session across runs of one task, so follow-ups keep context.
+      - name: Restore session
+        id: session
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.local/share/opencode
+          key: orqly-task-${{ inputs.task_id }}-${{ inputs.run_no }}
+          restore-keys: orqly-task-${{ inputs.task_id }}-
+
+      - name: Run agent
+        env:
+          PROMPT: ${{ inputs.prompt }}
+          MODEL: ${{ inputs.model }}
+          RESUME: ${{ steps.session.outputs.cache-matched-key }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          RULES: |
+            You are an automated coding agent working on a git branch of this repository.
+            - Make the smallest change that fully solves the task. Follow existing code style.
+            - Find and run the relevant tests/lint; iterate until they pass.
+            - Do NOT run git commit, git push, or change branches. The pipeline commits for you.
+            - Never touch secrets, CI workflows, or deployment config unless the task explicitly asks.
+            - If the task is unclear or impossible, make no changes and ask a concise question.
+            - Finish with a short summary: what changed, why, and test results.
+        run: |
+          args=(run --auto --format json -m "$MODEL")
+          [[ -n "$RESUME" ]] && args+=(--continue)
+          opencode "${args[@]}" "$RULES"$'\n\nTask:\n'"$PROMPT" | tee "$OUT/events.jsonl"
+
+      - name: Save session
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.local/share/opencode
+          key: orqly-task-${{ inputs.task_id }}-${{ inputs.run_no }}
+
+      - name: Summary
+        if: always()
+        run: |
+          jq -rs '[.[] | select(.type == "text") | .part.text] | last // ""' "$OUT/events.jsonl" > "$OUT/summary.md" || true
+          cat "$OUT/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit
+        id: commit
+        run: |
+          git config user.name "orqly-bot"
+          git config user.email "orqly-bot@users.noreply.github.com"
+          git -c core.hooksPath=/dev/null add -A
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git -c core.hooksPath=/dev/null commit -q -m "orqly: TASK-$TASK_ID run $RUN_NO" -m "$(head -c 3000 "$OUT/summary.md")"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Agent could have edited .git/config to redirect or hijack the push; refuse if so.
+          if git config --local --get-regexp '^(url\.|include|credential|http\.|core\.(sshcommand|askpass|fsmonitor|hookspath))'; then
+            echo "::error::suspicious git config after agent run"; exit 1
+          fi
+          git -c core.hooksPath=/dev/null push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/$BRANCH"
+
+      - name: Result metadata
+        if: always()
+        env:
+          CHANGED: ${{ steps.commit.outputs.changed || 'false' }}
+        run: |
+          jq -n --arg changed "$CHANGED" --arg commit "$(git rev-parse HEAD)" --arg branch "$BRANCH" \
+            --argjson files "$(git diff --name-only HEAD~1 2>/dev/null | jq -R . | jq -s . || echo '[]')" \
+            '{changed: ($changed == "true"), commit: $commit, branch: $branch, files: (if $changed == "true" then $files else [] end)}' \
+            > "$OUT/meta.json"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: orqly-result
+          path: ${{ runner.temp }}/orqly
+          retention-days: 7
