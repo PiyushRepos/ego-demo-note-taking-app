@@ -49,8 +49,47 @@ jobs:
         if: inputs.new_branch
         run: git switch -c "$BRANCH"
 
+      # Preinstall deps so the agent doesn't burn turns (and ~30s) discovering an empty node_modules.
+      - name: Detect dependencies
+        id: deps
+        run: |
+          if   [[ -f pnpm-lock.yaml ]];    then echo "install=corepack enable && pnpm install --frozen-lockfile" >> "$GITHUB_OUTPUT"
+          elif [[ -f yarn.lock ]];         then echo "install=corepack enable && yarn install --frozen-lockfile" >> "$GITHUB_OUTPUT"
+          elif [[ -f package-lock.json ]]; then echo "install=npm ci --no-audit --no-fund" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore node_modules
+        id: nm
+        if: steps.deps.outputs.install
+        uses: actions/cache/restore@v4
+        with:
+          path: node_modules
+          key: orqly-nm-${{ runner.os }}-${{ hashFiles('package-lock.json', 'pnpm-lock.yaml', 'yarn.lock') }}
+
+      - name: Install dependencies
+        if: steps.deps.outputs.install && steps.nm.outputs.cache-hit != 'true'
+        continue-on-error: true # agent can still sort it out
+        env:
+          INSTALL: ${{ steps.deps.outputs.install }}
+        run: eval "$INSTALL"
+
+      # Saved before the agent runs, so agent-added packages never pollute the cache.
+      - name: Save node_modules
+        if: steps.deps.outputs.install && steps.nm.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: node_modules
+          key: ${{ steps.nm.outputs.cache-primary-key }}
+
+      - name: Cache OpenCode download
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm/_cacache
+          key: orqly-opencode-1.18.32
+
       - name: Install OpenCode
-        run: npm i -g opencode-ai@1.18
+        run: npm i -g opencode-ai@1.18.32 --prefer-offline --no-audit --no-fund
 
       # Same OpenCode session across runs of one task, so follow-ups keep context.
       - name: Restore session
@@ -72,7 +111,8 @@ jobs:
           RULES: |
             You are an automated coding agent working on a git branch of this repository.
             - Make the smallest change that fully solves the task. Follow existing code style.
-            - Find and run the relevant tests/lint; iterate until they pass.
+            - Dependencies are already installed (node_modules present if the repo has a lockfile). Don't reinstall.
+            - Run the relevant tests/lint via the repo's own scripts (see package.json); iterate until they pass.
             - Do NOT run git commit, git push, or change branches. The pipeline commits for you.
             - Never touch secrets, CI workflows, or deployment config unless the task explicitly asks.
             - If the task is unclear or impossible, make no changes and ask a concise question.
