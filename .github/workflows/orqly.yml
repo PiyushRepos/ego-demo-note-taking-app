@@ -78,7 +78,8 @@ jobs:
             - If the task is unclear or impossible, make no changes and ask a concise question.
             - Finish with a short summary: what changed, why, and test results.
         run: |
-          args=(run --auto --format json -m "$MODEL")
+          # --print-logs: real errors go to stderr (json "error" events are often just "UnknownError")
+          args=(run --auto --format json --print-logs --log-level ERROR -m "$MODEL")
           [[ -n "$RESUME" ]] && args+=(--continue)
           opencode "${args[@]}" "$RULES"$'\n\nTask:\n'"$PROMPT" | tee "$OUT/events.jsonl"
 
