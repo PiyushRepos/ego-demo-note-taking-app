@@ -52,7 +52,7 @@ export default function Home() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search"
-              className="h-9 rounded-full border-transparent bg-muted pl-9 text-sm"
+              className="h-9 rounded-xl border-transparent bg-muted pl-9 text-sm"
             />
           </div>
           <Button
