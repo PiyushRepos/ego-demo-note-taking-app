@@ -25,14 +25,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const year = new Date().getFullYear();
+
   return (
     <html
       lang="en"
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen flex flex-col">
         {children}
-        <footer className="text-center text-sm text-muted-foreground py-4">Made with ❤️ hobbbit</footer>
+        <footer className="w-full py-4 text-sm text-muted-foreground">
+          <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="text-center sm:text-left">Made with ❤️ hobbbit</div>
+            <div className="text-center sm:text-right">© {year} hobbbit. All rights reserved.</div>
+          </div>
+        </footer>
       </body>
     </html>
   );
