@@ -32,7 +32,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <footer className="text-center text-sm text-muted-foreground py-4">Made with hobbbit</footer>
+        <footer className="text-center text-sm text-muted-foreground py-4">Made with ❤️ hobbbit</footer>
       </body>
     </html>
   );
