@@ -1,3 +1,4 @@
+// Notes model + storage
 export type NoteColor =
   | "amber"
   | "coral"
