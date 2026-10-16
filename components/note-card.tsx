@@ -16,6 +16,8 @@ export function NoteCard({
   onOpen: () => void
   onToggleStar: () => void
 }) {
+  const words = wordCount(note.content)
+
   return (
     <div
       role="button"
@@ -58,9 +60,11 @@ export function NoteCard({
           <span className="text-xs font-medium text-neutral-900/60">
             {formatDate(note.updatedAt)}
           </span>
-          <span className="text-xs font-medium text-neutral-900/60">
-            {wordCount(note.content)} {wordCount(note.content) === 1 ? "word" : "words"}
-          </span>
+          {words > 0 && (
+            <span className="text-xs font-medium text-neutral-900/60">
+              {words} {words === 1 ? "word" : "words"}
+            </span>
+          )}
         </div>
         <Button
           size="icon-lg"
