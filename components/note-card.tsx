@@ -61,7 +61,7 @@ export function NoteCard({
             {formatDate(note.updatedAt)}
           </span>
           {words > 0 && (
-            <span className="text-xs font-medium text-neutral-900/60">
+            <span className="text-xs font-medium text-neutral-900/40">
               {words === 1
                 ? "1 word"
                 : words < 10
