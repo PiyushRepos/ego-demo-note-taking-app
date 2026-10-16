@@ -5,7 +5,7 @@ import { Edit02Icon, StarIcon } from "@hugeicons/core-free-icons"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { formatDate, NOTE_COLORS, type Note } from "@/lib/notes"
+import { formatDate, NOTE_COLORS, wordCount, type Note } from "@/lib/notes"
 
 export function NoteCard({
   note,
@@ -54,9 +54,14 @@ export function NoteCard({
       </p>
 
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-neutral-900/60">
-          {formatDate(note.updatedAt)}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-neutral-900/60">
+            {formatDate(note.updatedAt)}
+          </span>
+          <span className="text-xs font-medium text-neutral-900/60">
+            {wordCount(note.content)} {wordCount(note.content) === 1 ? "word" : "words"}
+          </span>
+        </div>
         <Button
           size="icon-lg"
           tabIndex={-1}
