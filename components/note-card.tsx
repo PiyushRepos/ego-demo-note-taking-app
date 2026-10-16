@@ -62,7 +62,11 @@ export function NoteCard({
           </span>
           {words > 0 && (
             <span className="text-xs font-medium text-neutral-900/60">
-              {words} {words === 1 ? "word" : "words"}
+              {words === 1
+                ? "1 word"
+                : words < 10
+                ? String(words)
+                : `${words} words`}
             </span>
           )}
         </div>
