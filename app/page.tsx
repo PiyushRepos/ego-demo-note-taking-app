@@ -19,7 +19,7 @@ import { useTheme } from "@/hooks/use-theme"
 import { filterNotes, newNote, type Note } from "@/lib/notes"
 
 export default function Home() {
-  const { notes, upsert, remove, toggleStar } = useNotes()
+  const { notes, upsert, remove, toggleStar, persist } = useNotes()
   const { dark, toggle } = useTheme()
   const [query, setQuery] = React.useState("")
   const [editing, setEditing] = React.useState<Note | null>(null)
@@ -31,6 +31,12 @@ export default function Home() {
 
   const del = (id: string) => {
     remove(id)
+    setEditing(null)
+  }
+
+  const clearAll = () => {
+    if (!confirm("Delete all notes? This cannot be undone.")) return
+    persist([])
     setEditing(null)
   }
 
@@ -68,6 +74,17 @@ export default function Home() {
               </Button>
             ) : null}
           </div>
+          {notes.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAll}
+              aria-label="Clear all notes"
+              className="rounded-full"
+            >
+              Clear all
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon-lg"
