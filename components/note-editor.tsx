@@ -13,6 +13,8 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog"
 import { COLOR_KEYS, NOTE_COLORS, type Note } from "@/lib/notes"
 
@@ -28,6 +30,7 @@ export function NoteEditor({
   onDelete: (id: string) => void
 }) {
   const [draft, setDraft] = React.useState<Note | null>(note)
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = React.useState(false)
 
   React.useEffect(() => setDraft(note), [note])
 
@@ -90,7 +93,7 @@ export function NoteEditor({
         <DialogFooter className="mt-2 flex-row items-center justify-between gap-2 sm:justify-between">
           <Button
             variant="ghost"
-            onClick={() => onDelete(draft.id)}
+            onClick={() => setDeleteConfirmationOpen(true)}
             className="gap-1.5 bg-black/5 text-neutral-900 hover:bg-black/10"
           >
             <HugeiconsIcon icon={Delete02Icon} size={15} strokeWidth={2} />
@@ -113,6 +116,26 @@ export function NoteEditor({
           </div>
         </DialogFooter>
       </DialogContent>
+      <Dialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
+        <DialogContent>
+          <DialogTitle>Delete note?</DialogTitle>
+          <DialogDescription>
+            This note will be permanently deleted.
+          </DialogDescription>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setDeleteConfirmationOpen(false)
+                onDelete(draft.id)
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }

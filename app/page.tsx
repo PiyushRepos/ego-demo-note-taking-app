@@ -95,9 +95,14 @@ export default function Home() {
 
           {/* Main column */}
           <main className="min-w-0 flex-1">
-            <h1 className="mb-8 text-5xl font-bold tracking-tight sm:text-6xl">
-              My notes
-            </h1>
+            <div className="mb-8 flex items-baseline gap-3">
+              <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">My notes</h1>
+              <span className="text-sm text-muted-foreground">
+                {visible.length === 0
+                  ? "No matching notes"
+                  : `${visible.length} ${visible.length === 1 ? "note" : "notes"}`}
+              </span>
+            </div>
 
             {visible.length === 0 ? (
               <EmptyState hasNotes={notes.length > 0} onNew={() => setEditing(newNote())} />
