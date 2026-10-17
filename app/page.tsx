@@ -140,7 +140,7 @@ function EmptyState({
         <HugeiconsIcon icon={StickyNote01Icon} size={26} strokeWidth={2} />
       </div>
       <p className="text-sm text-muted-foreground">
-        {hasNotes ? "No notes match your Search" : "No notes yet."}
+        {hasNotes ? "No notes match your search yet" : "No notes yet."}
       </p>
       {!hasNotes && (
         <Button onClick={onNew} className="gap-1.5">
