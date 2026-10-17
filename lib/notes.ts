@@ -55,6 +55,12 @@ export function formatDate(ts: number) {
   })
 }
 
+export function wordCount(content: string): number {
+  const trimmed = content.trim()
+  if (!trimmed) return 0
+  return trimmed.split(/\s+/).length
+}
+
 const KEY = "docket.notes.v1"
 
 export function loadNotes(): Note[] {
