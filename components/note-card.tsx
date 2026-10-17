@@ -57,9 +57,6 @@ export function NoteCard({
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-neutral-900/60">
-            {formatDate(note.updatedAt)}
-          </span>
           {words > 0 && (
             <span className="text-xs font-medium text-neutral-900/40">
               {words === 1
@@ -69,6 +66,9 @@ export function NoteCard({
                 : `${words} words`}
             </span>
           )}
+          <span className="text-xs font-medium text-neutral-900/60">
+            {formatDate(note.updatedAt)}
+          </span>
         </div>
         <Button
           size="icon-lg"
