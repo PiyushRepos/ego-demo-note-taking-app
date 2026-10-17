@@ -35,6 +35,7 @@ export default function Home() {
   }
 
   const visible = filterNotes(notes, query)
+  const starredCount = visible.filter((note) => note.starred).length
 
   return (
     <div className="flex min-h-full flex-1 bg-[#e8e9f3] dark:bg-black">
@@ -95,13 +96,17 @@ export default function Home() {
 
           {/* Main column */}
           <main className="min-w-0 flex-1">
-            <div className="mb-8 flex items-baseline gap-3">
+            <div className="mb-8 flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">My notes</h1>
-              <span className="text-sm text-muted-foreground">
-                {visible.length === 0
-                  ? "No matching notes"
-                  : `${visible.length} ${visible.length === 1 ? "note" : "notes"}`}
-              </span>
+              {visible.length === 0 ? (
+                <span className="text-base font-medium text-muted-foreground">
+                  No matching notes
+                </span>
+              ) : (
+                <span className="text-base font-medium text-muted-foreground">
+                  {visible.length} {visible.length === 1 ? "note" : "notes"} · {starredCount} starred
+                </span>
+              )}
             </div>
 
             {visible.length === 0 ? (

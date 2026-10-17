@@ -117,15 +117,28 @@ export function NoteEditor({
         </DialogFooter>
       </DialogContent>
       <Dialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
-        <DialogContent>
-          <DialogTitle>Delete note?</DialogTitle>
-          <DialogDescription>
+        <DialogContent
+          className={cn(
+            "border-0 p-5 text-neutral-900 ring-black/10",
+            NOTE_COLORS[draft.color].bg
+          )}
+        >
+          <DialogTitle className="pr-6 text-base font-semibold text-neutral-900">
+            Delete this note?
+          </DialogTitle>
+          <DialogDescription className="text-sm text-neutral-900/65">
             This note will be permanently deleted.
           </DialogDescription>
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <DialogFooter className="mt-2 sm:flex-row sm:justify-end">
+            <DialogClose
+              render={
+                <Button className="bg-black/5 text-neutral-900 hover:bg-black/10" />
+              }
+            >
+              Cancel
+            </DialogClose>
             <Button
-              variant="destructive"
+              className="bg-red-600 text-white hover:bg-red-700"
               onClick={() => {
                 setDeleteConfirmationOpen(false)
                 onDelete(draft.id)
